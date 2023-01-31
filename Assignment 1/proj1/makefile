@@ -1,4 +1,5 @@
-make : ./proj1/main.cc
-	g++ -std=c++17 ./proj1/main.cc -o calculate
+make : ./src/main.cc ./src/Calculator.cc ./src/Calculator.h
+	g++ -std=c++17 ./src/main.cc ./src/Calculator.cc -o calculate
 
-make clean : 
+clean : 
+	rm -f bin/* calculate
