@@ -1,8 +1,0 @@
-SERVER CONNECTION ACCEPTED
-1	 2,  professional,  41,  4.64,  default
-2	 3,  professional,  36,  3.22,  default
-3	 4,  professional,  41,  3.11,  default
-4	 5,  industrial,    48,  3.80,  default
-5	 9,  industrial,    33,  5.25,  default
-6	10,  industrial,    32,  4.15,  default
-BYTES RECEIVED: 241

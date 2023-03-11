@@ -1,4 +1,4 @@
-#include "./DomainSocketServer.h"
+#include "../inc/DomainSocketServer.h"
 #include <string>
 using std::string;
 
