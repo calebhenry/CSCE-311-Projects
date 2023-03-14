@@ -18,8 +18,8 @@
 #include <cassert>
 #include <cerrno>
 #include <cstddef>
-#include <cstdlib> 
-#include <cstring> 
+#include <cstdlib>
+#include <cstring>
 
 #include <string>
 #include <iostream>
