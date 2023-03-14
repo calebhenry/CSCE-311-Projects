@@ -1,7 +1,8 @@
 /**
  * @file DomainSocketServer.cc
- * @author your name (you@domain.com)
- * @brief 
+ * @author Caleb Henry
+ * @brief Holds the Run function (along with its helper functions) 
+ * which connects and shares information with its client counterpart
  * @version 0.1
  * @date 2023-02-24
  * 
