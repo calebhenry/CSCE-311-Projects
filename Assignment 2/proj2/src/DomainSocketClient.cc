@@ -40,7 +40,7 @@ void DomainSocketClient ::RunClient(int argc, char *argv[]) {
     std::cerr << strerror(errno) << std::endl;
     exit(-1);
   }
-  std::cout << "SERVER CONNECTION ACCEPTED" << std::endl;
+  std::clog << "SERVER CONNECTION ACCEPTED" << std::endl;
 
   //  Write to socket
   const ssize_t kWrite_buffer_size = 64;
@@ -172,7 +172,7 @@ void DomainSocketClient::ReceiveData(int sock_fd) {
         std::cout << index << "\t" << str << std::endl;
         index++;
       }
-      std::cout << "BYTES RECEIVED: " << total_bytes_read << std::endl;
+      std::clog << "BYTES RECEIVED: " << total_bytes_read << std::endl;
       exit(0);
     } else if (cycle_bytes_read < 0) {
       std::cerr << strerror(errno) << std::endl;
