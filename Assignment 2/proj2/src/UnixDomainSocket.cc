@@ -1,3 +1,14 @@
+/**
+ * @file UnixDomainSocket.cc
+ * @author Caleb Henry
+ * @brief 
+ * @version 0.1
+ * @date 2023-03-13
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #include "../inc/UnixDomainSocket.h"
 
 
@@ -7,7 +18,7 @@ UnixDomainSocket ::UnixDomainSocket(const char *socket_path, bool abstract) {
   sock_addr_ = {};  // init struct (replaces memset from C)
   sock_addr_.sun_family = AF_UNIX;  // set to Unix domain socket (e.g. instead
                                     //   of internet domain socket)
-  if (abstract)                                  
+  if (abstract)
     // leaving leading null char sets abstract socket
     strncpy(sock_addr_.sun_path + 1,           // strncpy to limit copy for
             socket_path,                       //   portability

@@ -8,18 +8,18 @@
  * @copyright Copyright (c) 2023
  * 
  */
-#ifndef UNIXDOMAINSOCKET_H
-#define UNIXDOMAINSOCKET_H
+#ifndef INC_UNIXDOMAINSOCKET_H_
+#define INC_UNIXDOMAINSOCKET_H_
 
-#include <sys/socket.h>  // Unix header for sockets, using socket
-#include <sys/un.h>  // defns for Unix domain sockets, using struct sockaddr_un
-#include <unistd.h>  // Unix standard header, using close
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
 
-#include <cassert>  // using assert
-#include <cerrno>  // using errno
-#include <cstddef>  // using size_t
-#include <cstdlib>  // exit
-#include <cstring>  // using strncpy, strerror
+#include <cassert>
+#include <cerrno>
+#include <cstddef>
+#include <cstdlib> 
+#include <cstring> 
 
 #include <string>
 #include <iostream>
@@ -33,7 +33,7 @@ class  UnixDomainSocket {
   ///                    name for socket.
   /// @param abstract Defaults to abstract socket path names, pass false for
   ///                 non-abstract naming.
-  /// 
+  ///
   explicit UnixDomainSocket(const char *socket_path, bool abstract = true);
 
  protected:
@@ -42,4 +42,4 @@ class  UnixDomainSocket {
   std::string socket_path_;  // std::string stores socket_path (no raw pointers)
 };
 
-#endif // UNIXDOMAINSOCKET_H
+#endif  // INC_UNIXDOMAINSOCKET_H_

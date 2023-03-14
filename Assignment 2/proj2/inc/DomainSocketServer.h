@@ -1,7 +1,8 @@
 /**
  * @file DomainSocketServer.h
  * @author Caleb Henry
- * @brief 
+ * @brief Holds the RunServer function (along with its helper functions) 
+ * which connects and shares information with its client counterpart
  * @version 0.1
  * @date 2023-02-24
  * 
@@ -9,18 +10,18 @@
  * 
  */
 
-#ifndef DOMAINSOCKETSERVER_H
-#define DOMAINSOCKETSERVER_H
+#ifndef INC_DOMAINSOCKETSERVER_H_
+#define INC_DOMAINSOCKETSERVER_H_
 
-#include <sys/socket.h>  // Unix header for sockets, using socket
-#include <sys/un.h>  // defns for Unix domain sockets, using struct sockaddr_un
-#include <unistd.h>  // Unix standard header, using close
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
 
-#include <cassert>  // using assert
-#include <cerrno>  // using errno
-#include <cstddef>  // using size_t
-#include <cstdlib>  // exit
-#include <cstring>  // using strncpy, strerror
+#include <cassert>
+#include <cerrno>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
 
 #include <string>
 #include <vector>
@@ -33,13 +34,15 @@ class DomainSocketServer : public UnixDomainSocket {
  public:
   using ::UnixDomainSocket::UnixDomainSocket;
 
-  void RunServer() const;
+  void UnixDomainSocket::RunServer() const;
  private:
- 
-  void CreateSocket(int &sock_fd, int &client_req_sock_fd) const;
+  int CreateSocket() const;
+
   std::vector<std::string> RunSearch(std::string str) const;
+
   std::vector<std::string> Explode(std::string str) const;
+
   void SendData(std::vector<std::string> lines, int sock_fd) const;
 };
 
-#endif // DOMAINSOCKETSERVER_H
+#endif  // INC_DOMAINSOCKETSERVER_H_
