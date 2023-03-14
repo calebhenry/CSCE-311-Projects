@@ -1,7 +1,7 @@
 /**
  * @file UnixDomainSocket.h
  * @author Caleb Henry
- * @brief 
+ * @brief Creates the struct for the domain socket
  * @version 0.1
  * @date 2023-02-24
  * 
@@ -26,14 +26,6 @@
 
 class  UnixDomainSocket {
  public:
-  ///
-  /// Initializes the socket address struct (::sockaddr_un)
-  ///
-  /// @param socket_path A null-terminated C-string containing the shared path
-  ///                    name for socket.
-  /// @param abstract Defaults to abstract socket path names, pass false for
-  ///                 non-abstract naming.
-  ///
   explicit UnixDomainSocket(const char *socket_path, bool abstract = true);
 
  protected:

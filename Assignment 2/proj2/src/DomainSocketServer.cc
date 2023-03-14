@@ -12,14 +12,14 @@
 #include "../inc/DomainSocketServer.h"
 
 void DomainSocketServer:: RunServer() const {
-  int sock_fd;  // unnamed socket file descriptor
-  int client_req_sock_fd;  // client connect request socket file descriptor
+  int sock_fd;
+  int client_req_sock_fd;
 
-  //Create a socket
-  sock_fd = CreateSocket(sock_fd);
+  //  Create a socket
+  sock_fd = CreateSocket();
 
-  // Listen for connections from clients
-  size_t kMax_client_conns = 7;
+  //  Listen for connections from clients
+  size_t kMax_client_conns = get_nprocs_conf()-1;
   int success = listen(sock_fd, kMax_client_conns);
   if (success < 0) {
     std::cerr << strerror(errno) << std::endl;

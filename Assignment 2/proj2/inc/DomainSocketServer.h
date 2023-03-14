@@ -15,6 +15,7 @@
 
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/sysinfo.h>
 #include <unistd.h>
 
 #include <cassert>
@@ -34,7 +35,7 @@ class DomainSocketServer : public UnixDomainSocket {
  public:
   using ::UnixDomainSocket::UnixDomainSocket;
 
-  void UnixDomainSocket::RunServer() const;
+  void RunServer() const;
  private:
   int CreateSocket() const;
 

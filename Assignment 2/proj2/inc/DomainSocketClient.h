@@ -33,7 +33,7 @@ class DomainSocketClient : public UnixDomainSocket {
  public:
   using UnixDomainSocket::UnixDomainSocket;
 
-  void UnixDomainSocket::RunClient(int argc, char *argv[]);
+  void RunClient(int argc, char *argv[]);
  private:
   void MakeSocket();
   std::string ProcessString(int argc, char *argv[]);

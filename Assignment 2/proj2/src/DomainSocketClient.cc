@@ -25,14 +25,14 @@ void DomainSocketClient ::RunClient(int argc, char *argv[]) {
   // Process and delimit string
   std::string message = ProcessString(argc, argv);
 
-  // Open nameless Unix socket
+  // Open a socket
   int socket_fd = socket(AF_UNIX, SOCK_STREAM, 0);
   if (socket_fd < 0) {
     std::cerr << strerror(errno) << std::endl;
     exit(-1);
   }
 
-  //  Connect to an existing socket
+  //  Connect to the shared socket
   int success = connect(socket_fd,
                         reinterpret_cast<const sockaddr*>(&sock_addr_),
                         sizeof(sock_addr_));
@@ -131,11 +131,10 @@ std::string DomainSocketClient::ProcessString(int argc, char *argv[]) {
  * @param sock_fd The socket file descriptor that is being read from
  */
 void DomainSocketClient::ReceiveData(int sock_fd) {
-  const size_t kRead_buffer_size = 32;  // read 4 byte increaments
+  const size_t kRead_buffer_size = 32;
   char read_buffer[kRead_buffer_size];
   int cycle_bytes_read;
   while (true) {
-    //Receive data from server
     cycle_bytes_read = read(sock_fd, read_buffer, kRead_buffer_size);
     int total_bytes_read = 0;
     std::string message;
