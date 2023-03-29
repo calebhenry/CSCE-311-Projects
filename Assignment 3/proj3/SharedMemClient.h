@@ -17,10 +17,11 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <atomic>
 
 class SharedMemClient : public Thread<SharedMemClient> {
     public:
-     SharedMemClient(::pthread_t, ::size_t);
+     SharedMemClient(::pthread_t, ::size_t, std::vector<std::string>* lines, std::atomic<int>* num_found, std::vector<std::string>* search, bool* complete);
      void runClient(int argc, char *argv[]);
      static void* Execute(void* ptr);
     private:
@@ -39,7 +40,8 @@ class SharedMemClient : public Thread<SharedMemClient> {
 
      std::vector<std::string>* search;
      std::vector<std::string>* lines;
-     int* num_found;
+     std::atomic<int>* num_found;
+     bool* complete;
 };
 
 #endif // SHAREDMEMCLIENT_H_
