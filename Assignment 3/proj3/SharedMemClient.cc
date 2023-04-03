@@ -1,49 +1,52 @@
 #include "./SharedMemClient.h"
 
-SharedMemClient::SharedMemClient(::pthread_t id, ::size_t index, std::vector<std::string>* lines_, std::atomic<int>* num_found_, std::vector<std::string>* search_, bool* complete_) 
+SharedMemClient::SharedMemClient(::pthread_t id, ::size_t index, 
+  std::vector<std::string>* lines_, 
+  std::vector<std::string>* search_, std::vector<std::string>* searched_) 
   :Thread<SharedMemClient>(id, index),
-  num_found(num_found_),
   lines(lines_),
   search(search_),
+  searched(searched_),
   writing_("writing_name"),
   reading_("shm_finished_name"), 
   barrier_("bar"),
-  available_lines("av"),
   print_lock("pr")
-  {
+ {
 
   shm_name_ = "letsgoo";
+  shm_unlink(shm_name_.c_str());
+
+  int shm_fd = ::shm_open(shm_name_.c_str(), O_CREAT | O_EXCL | O_RDWR, 0660);
+  if (shm_fd < 0) {
+      std::cerr << "Consumer::Cnsumer --- ::shm_open(" << shm_name_ << ") --- "
+        <<  ::strerror(errno) << std::endl;
+        ::exit(errno);
+  }
+  // set size of shared memory with file descriptor
+  if (::ftruncate(shm_fd, kSharedMemSize) < 0) {
+      std::cerr << ::strerror(errno) << std::endl;
+      ::exit(errno);
+  }
+
+  //Get a copy of the memory
+  const int kProt = PROT_READ | PROT_WRITE;
+  store_ = static_cast<SharedMemoryStore<kSharedMemSize>*>(
+      ::mmap(nullptr, kSharedMemSize, kProt, MAP_SHARED, shm_fd, 0));
+
+  if (store_ == MAP_FAILED) {
+      std::cerr << ::strerror(errno) << std::endl;
+      ::exit(errno);
+  }
+  store_->buffer_size = kBufferSize;
+
   writing_.Open();
   reading_.Open();
   barrier_.Open();
-  available_lines.Open();
   print_lock.Open();
     
 }
 
 void SharedMemClient::runClient(int argc, char *argv[]){
-    int shm_fd = ::shm_open(shm_name_.c_str(), O_RDWR, 0);
-    if (shm_fd < 0) {
-        std::cerr << "Producer::Produce ::shm_open: " << ::strerror(errno)
-         << std::endl;
-         //return errno;
-    }
-
-  // get copy of mapped mem
-  SharedMemoryStore<kSharedMemSize>* store
-    = static_cast<SharedMemoryStore<kSharedMemSize>*>(
-      ::mmap(nullptr,
-             kSharedMemSize,
-             PROT_READ | PROT_WRITE,
-             MAP_SHARED,
-             shm_fd,
-             0
-      )
-    );
-  if (store == MAP_FAILED) {
-    std::cerr << "Producer::Produce ::mmap: " << ::strerror(errno)
-      << std::endl;
-  }
   // Parse input
   std::string msg = argv[1];
 
@@ -53,22 +56,22 @@ void SharedMemClient::runClient(int argc, char *argv[]){
   } else {
     search->push_back(argv[3]);
     for (int i = 2; i < argc; i++) {
-    if (i % 2 == 0) {
-      search->push_back(argv[i]);
-    } else {
-      if (argv[3] != argv[i]) {
-        std::cerr << "Mixed boolean operators not presently supported"
-          << std::endl;
-        exit(2);
+      if (i % 2 == 0) {
+        search->push_back(argv[i]);
+      } else {
+        if (argv[3] != argv[i]) {
+          std::cerr << "Mixed boolean operators not presently supported"
+            << std::endl;
+          exit(2);
+        }
       }
     }
-  }
   }
 
   const char kEoT = static_cast<char>(3);
 
   // copy string msg into shared memory via strncpy ('n' for bounded copy)
-  strncpy(store->buffer, msg.c_str(), store->buffer_size);
+  strncpy(store_->buffer, msg.c_str(), store_->buffer_size);
   
   // signal consumer
   writing_.Up();
@@ -77,10 +80,9 @@ void SharedMemClient::runClient(int argc, char *argv[]){
   {
     reading_.Down();
     barrier_.Down();  // block until occupied signal
-    std::string buff(store->buffer);
+    std::string buff(store_->buffer);
     while(buff.find('\n') != std::string::npos){
       lines->push_back(buff.substr(0, buff.find('\n')));
-      available_lines.Up();
       buff = buff.substr(buff.find('\n')+1);
     }
     if(buff.find(kEoT) != std::string::npos){
@@ -89,59 +91,71 @@ void SharedMemClient::runClient(int argc, char *argv[]){
     barrier_.Up();
     writing_.Up();
   }
-  for(size_t i = 0; i < lines->size(); i++){
-    std::cout << lines->at(i) << std::endl;
+
+  std::vector<SharedMemClient> clients;
+  for(int i = 0; i < 4; i++) {
+      clients.push_back(::SharedMemClient(pthread_t(), i, lines, search, searched));
+  }
+  for(auto& client : clients){
+      pthread_create(&client.thread_id(), nullptr, ::SharedMemClient::Execute, static_cast<void *>(&client));
+  }
+  for (auto& client : clients){
+      pthread_join(client.thread_id(), nullptr);
+  }
+  for(std::string line : *searched) {
+    std::cout << line << std::endl;
   }
 }
 
 void* SharedMemClient::Execute(void* ptr) {
   auto client = static_cast<::SharedMemClient *>(ptr);
-  int index = 0;
-  while(true){
-    client->available_lines.Down();
-    std::string line = (client->lines)->at(index);
+  std::vector<std::string> thread_lines(0);
+
+  // Divide up lines
+  size_t num_each = ((client->lines)->size())/4;
+  for(size_t i = client->id() * num_each; i < (client->id()+1) * num_each; i++) {
+    thread_lines.push_back((client->lines)->at(i));
+  }
+  if(client->id() == 3) {
+    for(size_t i = (client->id()+1) * num_each; i < (client->lines->size()); i++) {
+      thread_lines.push_back((client->lines)->at(i));
+    }
+  }
+
+  //Parse lines
+  for(auto line : thread_lines) {
     if (client->search->at(0) == "x") {
       bool add = true;
-      for (size_t i = 2; i < client->search->size(); i++) {
+      for (size_t i = 1; i < client->search->size(); i++) {
         if (line.find(client->search->at(i)) == std::string::npos) {
           add = false;
         }
       }
       if (add) {
-        *(client->num_found) += 1;
-        line = std::to_string(*client->num_found) + "\t" + line + " done by thread " + std::to_string(client->id());
-        client->PrintThreaded(line);
-        std::cout << std::endl;
+        client->AddVector(line);
       }
     } else if (client->search->at(0) == "+") {
       bool add = false;
-      for (size_t i = 2; i < client->search->size(); i++) {
+      for (size_t i = 1; i < client->search->size(); i++) {
         if (line.find(client->search->at(i)) != std::string::npos) {
           add = true;
         }
       }
       if (add) {
-        *(client->num_found) += 1;
-        line = std::to_string(*client->num_found) + "\t" + line + " done by thread " + std::to_string(client->id());
-        client->PrintThreaded(line);
-        std::cout << std::endl;
+        client->AddVector(line);
       }
     } else {
       if (line.find(client->search->at(1)) != std::string::npos) {
-        *(client->num_found) += 1;
-        line = std::to_string(*client->num_found) + "\t" + line;
-        client->PrintThreaded(line);
-        std::cout << std::endl;
+        client->AddVector(line);
       }
     }
-
-    index++;
   }
   return ptr;
 }
 
-void SharedMemClient::PrintThreaded(const std::string& msg) {
+void SharedMemClient::AddVector(const std::string& msg) {
   print_lock.Down();
-  std::cout << msg;
+  std::string line = std::to_string(searched->size()+1) + "\t" + msg;
+  searched->push_back(line);
   print_lock.Up();
 }

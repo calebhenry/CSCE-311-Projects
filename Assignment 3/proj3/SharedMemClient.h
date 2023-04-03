@@ -21,27 +21,31 @@
 
 class SharedMemClient : public Thread<SharedMemClient> {
     public:
-     SharedMemClient(::pthread_t, ::size_t, std::vector<std::string>* lines, std::atomic<int>* num_found, std::vector<std::string>* search, bool* complete);
+     SharedMemClient(::pthread_t, ::size_t,
+        std::vector<std::string>* lines, std::vector<std::string>* search, 
+        std::vector<std::string>* searched);
      void runClient(int argc, char *argv[]);
      static void* Execute(void* ptr);
     private:
      std::string ProcessString(int argc, char *argv[]);
-     void PrintThreaded(const std::string& msg);
+     void AddVector(const std::string& msg);
+
      static const std::size_t kBufferSize = 1024;
      static const std::size_t kSharedMemSize =
        SharedMemoryStoreSizeInPages(kBufferSize);
 
-     std::string shm_name_ = "memshare";  // shared memory name
+     std::vector<std::string>* lines;
+     std::vector<std::string>* search;
+     std::vector<std::string>* searched;
+
      wrappers::NamedSemaphore writing_;  // shared memory log mutex
      wrappers::NamedSemaphore reading_;
      wrappers::NamedSemaphore barrier_;
-     wrappers::NamedSemaphore available_lines;
      wrappers::NamedSemaphore print_lock;
 
-     std::vector<std::string>* search;
-     std::vector<std::string>* lines;
-     std::atomic<int>* num_found;
-     bool* complete;
+     std::string shm_name_ = "memshare";  // shared memory name
+
+     SharedMemoryStore<kSharedMemSize> *store_;
 };
 
 #endif // SHAREDMEMCLIENT_H_

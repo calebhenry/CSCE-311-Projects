@@ -5,33 +5,9 @@ SharedMemServer::SharedMemServer()
     reading_("shm_finished_name"),
     barrier_("bar"),
     available_lines("av"),
-    print_lock("pr"){
+    print_lock("pr") {
+
     shm_name_ = "letsgoo";
-    shm_unlink(shm_name_.c_str());
-    
-    //Get File Descriptor
-    int shm_fd = ::shm_open(shm_name_.c_str(), O_CREAT | O_EXCL | O_RDWR, 0660);
-    if (shm_fd < 0) {
-        std::cerr << "Consumer::Cnsumer --- ::shm_open(" << shm_name_ << ") --- "
-          <<  ::strerror(errno) << std::endl;
-         ::exit(errno);
-    }
-    // set size of shared memory with file descriptor
-   if (::ftruncate(shm_fd, kSharedMemSize) < 0) {
-        std::cerr << ::strerror(errno) << std::endl;
-        ::exit(errno);
-    }
-
-    //Get a copy of the memory
-    const int kProt = PROT_READ | PROT_WRITE;
-    store_ = static_cast<SharedMemoryStore<kSharedMemSize>*>(
-        ::mmap(nullptr, kSharedMemSize, kProt, MAP_SHARED, shm_fd, 0));
-
-    if (store_ == MAP_FAILED) {
-        std::cerr << ::strerror(errno) << std::endl;
-        ::exit(errno);
-    }
-    store_->buffer_size = kBufferSize;
 
     //Create Barrier
     writing_.Create(0);
@@ -52,6 +28,7 @@ SharedMemServer::SharedMemServer()
 
 void SharedMemServer::runServer() {
   // write any logs to file
+  SharedMemoryStore<kSharedMemSize>* store;
   const char kEoT = static_cast<char>(3);
   std::vector<std::string> file;
   std::ifstream file_read;
@@ -65,8 +42,29 @@ void SharedMemServer::runServer() {
     writing_.Down();  // block until occupied signal
     barrier_.Down();
     if(num_access == 0) {
+        int shm_fd = ::shm_open(shm_name_.c_str(), O_RDWR, 0);
+        if (shm_fd < 0) {
+            std::cerr << "Producer::Produce ::shm_open: " << ::strerror(errno)
+            << std::endl;
+            //return errno;
+        }
+
+        // get copy of mapped mem
+        store = static_cast<SharedMemoryStore<kSharedMemSize>*>(
+            ::mmap(nullptr,
+                    kSharedMemSize,
+                    PROT_READ | PROT_WRITE,
+                    MAP_SHARED,
+                    shm_fd,
+                    0
+            )
+            );
+        if (store == MAP_FAILED) {
+            std::cerr << "Producer::Produce ::mmap: " << ::strerror(errno)
+            << std::endl;
+        }
         file.clear();
-        file_read.open(store_->buffer);
+        file_read.open(store->buffer);
         if (file_read.is_open()) {
             while (std::getline(file_read, line)) {
                 file.push_back(line);
@@ -84,7 +82,7 @@ void SharedMemServer::runServer() {
         msg += kEoT;
         num_access = -1;
     }
-    strncpy(store_->buffer, msg.c_str(), store_->buffer_size);
+    strncpy(store->buffer, msg.c_str(), store->buffer_size);
     std::cout << msg;
     barrier_.Up();
     reading_.Up(); // return semaphore
