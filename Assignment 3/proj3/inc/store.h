@@ -1,7 +1,7 @@
 // Copyright 2022 CSCE 311
 //
-#ifndef STORE_H_
-#define STORE_H_
+#ifndef INC_STORE_H_
+#define INC_STORE_H_
 
 
 #include <cstddef>  // size_t
@@ -27,4 +27,4 @@ constexpr std::size_t SharedMemoryStoreSizeInPages(
 }
 
 
-#endif  // STORE_H
+#endif  // INC_STORE_H_

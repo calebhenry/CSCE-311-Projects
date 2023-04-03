@@ -1,7 +1,7 @@
 // Copyright 2022 CSCE 311
 //
-#ifndef NAMEDSEMAPHORE_H_
-#define NAMEDSEMAPHORE_H_
+#ifndef INC_NAMEDSEMAPHORE_H_
+#define INC_NAMEDSEMAPHORE_H_
 
 
 #include <fcntl.h>  // POSIX open flags (O_CREAT, O_RD, O_RDWR, O_WR)
@@ -13,6 +13,7 @@
 #include <cstring>  // strerror(int)
 
 #include <iostream>
+#include <string>
 
 
 namespace wrappers {
@@ -22,11 +23,12 @@ class NamedSemaphore {
  public:
   // name: a null-terminated string beginning with a forward slash (/)
   // count: starting value of semaphore
-  NamedSemaphore(const char name[]) : name_(std::string(name)),
+  explicit NamedSemaphore(const char name[]) : name_(std::string(name)),
                                       sem_ptr_(nullptr) {
     // empty
   }
-  NamedSemaphore(const std::string& name) : name_(name), sem_ptr_(nullptr) {
+  explicit NamedSemaphore(const std::string& name) : name_(name),
+    sem_ptr_(nullptr) {
     // empty
   }
 
@@ -59,5 +61,4 @@ class NamedSemaphore {
 
 }  // namespace wrappers
 
-
-#endif  // NAMEDSEMAPHORE_H_
+#endif  // INC_NAMEDSEMAPHORE_H_

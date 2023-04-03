@@ -1,9 +1,6 @@
-#ifndef SHAREDMEMCLIENT_H_
-#define SHAREDMEMCLIENT_H_
 
-#include "./NamedSemaphore.h"
-#include "./store.h"
-#include "./Thread.h"
+#ifndef INC_SHAREDMEMCLIENT_H_
+#define INC_SHAREDMEMCLIENT_H_
 
 #include <sys/mman.h>  // POSIX shared memory map
 #include <sys/unistd.h>  // Unix standard header (ftruncate)
@@ -19,33 +16,38 @@
 #include <vector>
 #include <atomic>
 
+#include "./NamedSemaphore.h"
+#include "./store.h"
+#include "./Thread.h"
+
 class SharedMemClient : public Thread<SharedMemClient> {
-    public:
-     SharedMemClient(::pthread_t, ::size_t,
-        std::vector<std::string>* lines, std::vector<std::string>* search, 
-        std::vector<std::string>* searched);
-     void runClient(int argc, char *argv[]);
-     static void* Execute(void* ptr);
-    private:
-     std::string ProcessString(int argc, char *argv[]);
-     void AddVector(const std::string& msg);
+ public:
+    SharedMemClient(::pthread_t, ::size_t,
+      std::vector<std::string>* lines, std::vector<std::string>* search,
+      std::vector<std::string>* searched);
+    void runClient(int argc, char *argv[]);
+    static void* Execute(void* ptr);
 
-     static const std::size_t kBufferSize = 1024;
-     static const std::size_t kSharedMemSize =
-       SharedMemoryStoreSizeInPages(kBufferSize);
+ private:
+    std::string ProcessString(int argc, char *argv[]);
+    void AddVector(const std::string& msg);
 
-     std::vector<std::string>* lines;
-     std::vector<std::string>* search;
-     std::vector<std::string>* searched;
+    static const std::size_t kBufferSize = 1024;
+    static const std::size_t kSharedMemSize =
+      SharedMemoryStoreSizeInPages(kBufferSize);
 
-     wrappers::NamedSemaphore writing_;  // shared memory log mutex
-     wrappers::NamedSemaphore reading_;
-     wrappers::NamedSemaphore barrier_;
-     wrappers::NamedSemaphore print_lock;
+    std::vector<std::string>* lines;
+    std::vector<std::string>* search;
+    std::vector<std::string>* searched;
 
-     std::string shm_name_ = "memshare";  // shared memory name
+    wrappers::NamedSemaphore writing_;  // shared memory log mutex
+    wrappers::NamedSemaphore reading_;
+    wrappers::NamedSemaphore barrier_;
+    wrappers::NamedSemaphore print_lock;
 
-     SharedMemoryStore<kSharedMemSize> *store_;
+    std::string shm_name_ = "memshare";  // shared memory name
+
+    SharedMemoryStore<kSharedMemSize> *store_;
 };
 
-#endif // SHAREDMEMCLIENT_H_
+#endif  // INC_SHAREDMEMCLIENT_H_
