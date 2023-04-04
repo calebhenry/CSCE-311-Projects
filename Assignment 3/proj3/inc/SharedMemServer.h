@@ -1,3 +1,13 @@
+/**
+ * @file SharedMemServer.h
+ * @author Caleb Henry
+ * @brief Fetches data requested by the client then returns it by shared memory
+ * @version 0.1
+ * @date 2023-04-03
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #ifndef INC_SHAREDMEMSERVER_H_
 #define INC_SHAREDMEMSERVER_H_
 

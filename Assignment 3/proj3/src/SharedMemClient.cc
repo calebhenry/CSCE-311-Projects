@@ -1,5 +1,30 @@
+/**
+ * @file SharedMemClient.cc
+ * @author Caleb Henry
+ * @brief Holds the run function, along with its helper functions.
+ * It connects to the server counterpart using shm, and splits
+ * into threads to process the result
+ * @version 0.1
+ * @date 2023-04-03
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #include "../inc/SharedMemClient.h"
 
+/**
+ * @brief Construct a new Shared Mem Client:: Shared Mem Client object,
+ * creates the block of shared memeory, and opens the semaphores
+ * 
+ * @param id The thread id
+ * @param index The thread index
+ * @param lines_ The shared vector that keeps track of all the 
+ * file lines
+ * @param search_ The shared vector that contains the search
+ * terms
+ * @param searched_ The shared vector that contains the resulting
+ * searched lines
+ */
 SharedMemClient::SharedMemClient(::pthread_t id, ::size_t index,
   std::vector<std::string>* lines_,
   std::vector<std::string>* search_, std::vector<std::string>* searched_)
@@ -43,6 +68,14 @@ SharedMemClient::SharedMemClient(::pthread_t id, ::size_t index,
   print_lock.Open();
 }
 
+/**
+ * @brief Takes in user input through the command line, sends
+ * the file over to the server, uses shm to get the file lines
+ * back, then splits into threads to search them
+ * 
+ * @param argc the argument count
+ * @param argv the argument vector
+ */
 void SharedMemClient::runClient(int argc, char *argv[]) {
   // Parse input
   std::string msg = argv[1];
@@ -109,16 +142,26 @@ void SharedMemClient::runClient(int argc, char *argv[]) {
   for (auto& client : clients) {
       pthread_join(client.thread_id(), nullptr);
   }
+
   // Step 5
   for (std::string line : *searched) {
     std::cout << line << std::endl;
   }
+
   // Step 6
   shm_unlink(shm_name_.c_str());
+
   // Step 7
   exit(0);
 }
 
+/**
+ * @brief The thread method that executes when each of the 
+ * threads is formed to sort one quarter of the lines
+ * 
+ * @param ptr The void pointer to the thread
+ * @return void* The thread
+ */
 void* SharedMemClient::Execute(void* ptr) {
   auto client = static_cast<::SharedMemClient *>(ptr);
   std::vector<std::string> thread_lines(0);
@@ -167,6 +210,11 @@ void* SharedMemClient::Execute(void* ptr) {
   return ptr;
 }
 
+/**
+ * @brief Takes the string and adds it to the vector atomically
+ * 
+ * @param msg The string that is added
+ */
 void SharedMemClient::AddVector(const std::string& msg) {
   print_lock.Down();
   std::string line = std::to_string(searched->size()+1) + "\t" + msg;

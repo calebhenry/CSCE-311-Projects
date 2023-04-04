@@ -1,4 +1,13 @@
-
+/**
+ * @file SharedMemClient.h
+ * @author Caleb Henry
+ * @brief Takes in command line arguments and fetches the directed information from the server
+ * @version 0.1
+ * @date 2023-04-03
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #ifndef INC_SHAREDMEMCLIENT_H_
 #define INC_SHAREDMEMCLIENT_H_
 

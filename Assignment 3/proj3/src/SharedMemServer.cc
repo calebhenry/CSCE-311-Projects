@@ -1,5 +1,22 @@
+/**
+ * @file SharedMemServer.cc
+ * @author Caleb Henry
+ * @brief Holds the run function, along with its helper functions.
+ * It connects to the client counterpart using shm and sends the
+ * requested file
+ * @version 0.1
+ * @date 2023-04-03
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #include "../inc/SharedMemServer.h"
 
+/**
+ * @brief Construct a new Shared Mem Server:: Shared Mem Server object
+ * and create the semaphores
+ * 
+ */
 SharedMemServer::SharedMemServer()
     : writing_("writing_name"),
       reading_("shm_finished_name"),
@@ -26,6 +43,11 @@ SharedMemServer::SharedMemServer()
   print_lock.Open();
 }
 
+/**
+ * @brief Opens the server and waits for a client to connect,
+ * then opens the shm location and reads the file into it
+ * 
+ */
 void SharedMemServer::runServer() {
   // write any logs to file
   SharedMemoryStore<kSharedMemSize>* store;
