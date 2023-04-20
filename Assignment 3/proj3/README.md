@@ -32,8 +32,8 @@ File 10: Thread.h
     Purpose: A template class for threads
 
 File 11: makefile
-    Purpose: Creates the client executable when given the command make text-client, 
-    creates the server executable when given the command make text-server. and 
+    Purpose: Creates the client executable when given the command make csv-client, 
+    creates the server executable when given the command make csv-server. and 
     cleans out intermediary files when given the command make clean
 
 File 12: bankloan1.csv

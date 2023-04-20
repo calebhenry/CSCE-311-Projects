@@ -1,18 +1,29 @@
-// YOUR DOCUMENTATION GOES HERE
-//
-//
-#include <ios>
-#include <string>
+/**
+ * @file mmap_fstream.h
+ * @author Caleb Henry
+ * @brief Creates an fstream object and allows access to both read and write in a file
+ * @version 1.0
+ * @date 2023-04-20
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
+#ifndef PROJ4_MMAP_FSTREAM_H_
+#define PROJ4_MMAP_FSTREAM_H_
+
 #include <unistd.h>
-
 #include <fcntl.h>
-#include <sys/mman.h>
-
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#include <ios>
+#include <string>
 
 
 namespace mem_map {
@@ -119,13 +130,16 @@ class fstream {
   fstream& put(char c);
 
  private:
-  int file_size;
-  int index;
-  int alloc;
-  int fd;
+  std::size_t file_size;
+  std::size_t alloc;
+  std::size_t index;
+  static const std::size_t page_size = 4096;
   bool curr_open;
   char *data;
   std::string file_name;
+  
 };
 
 }  // namespace mem_map
+
+#endif  // PROJ4_MMAP_FSTREAM_H_

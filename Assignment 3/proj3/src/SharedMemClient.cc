@@ -90,7 +90,7 @@ void SharedMemClient::runClient(int argc, char *argv[]) {
       if (i % 2 == 0) {
         search->push_back(argv[i]);
       } else {
-        if (argv[3] != argv[i]) {
+        if (strcmp(argv[3], argv[i]) != 0) {
           std::cerr << "Mixed boolean operators not presently supported"
             << std::endl;
           exit(2);
